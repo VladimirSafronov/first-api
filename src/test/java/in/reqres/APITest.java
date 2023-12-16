@@ -1,13 +1,18 @@
 package in.reqres;
 
 import static io.restassured.RestAssured.given;
+import static specification.Specification.*;
 
+import data.Account;
 import data.Resource;
 import data.User;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 public class APITest {
@@ -15,10 +20,12 @@ public class APITest {
   @Test
   public void takeAllUsersFromPageThenUsersAvatarsNamesDifferent() {
     Resource resource = given()
+        .spec(requestSpec())
         .when()
-        .get("https://reqres.in/api/users?page=2")
+        .get("/api/users?page=2")
         .then()
         .log().body()
+        .spec(responseSpec())
         .extract().body().as(Resource.class);
 
     List<String> avatarNames = getFileNames(
@@ -27,6 +34,45 @@ public class APITest {
     int uniqueAvatarNamesCount = (int) avatarNames.stream().distinct().count();
     Assert.assertEquals(uniqueAvatarNamesCount, avatarNames.size(),
         "Список пользователей содержит одинаковые имена файлов: " + avatarNames);
+  }
+
+  @Test(dataProvider = "loginCorrectData")
+  public void loginWithCorrectDataThenCorrectToken(String email, String password, String token) {
+    Account account = new Account(email, password);
+    Response response = given()
+        .spec(requestSpec())
+        .body(account)
+        .when()
+        .post("/api/login")
+        .then()
+        .log().all()
+        .spec(responseSpec())
+        .extract().response();
+    JsonPath jsonPath = response.jsonPath();
+    String realToken = jsonPath.getString("token");
+
+    Assert.assertEquals(realToken, token,
+        "При входе в аккаунт с корректными данными, ожидаемый token: " + token + ". А в ответе: "
+            + realToken);
+  }
+
+  @Test(dataProvider = "loginWithoutPassword")
+  public void loginWithoutPasswordThenError(String email, String error) {
+    Account account = new Account(email);
+    Response response = given()
+        .spec(requestSpec())
+        .body(account)
+        .when()
+        .post("/api/login")
+        .then()
+        .log().all()
+        .statusCode(400)
+        .extract().response();
+    JsonPath jsonPath = response.jsonPath();
+    String curError = jsonPath.getString("error");
+    Assert.assertEquals(curError, error,
+        "При входе в личный кабинет без пароля получаем ошибку: " + curError + ". Ожидаем: "
+            + error);
   }
 
   /**
@@ -43,5 +89,15 @@ public class APITest {
       fileNames.add(curFileName);
     }
     return fileNames;
+  }
+
+  @DataProvider
+  public Object[][] loginCorrectData() {
+    return new Object[][]{{"eve.holt@reqres.in", "cityslicka", "QpwL5tke4Pnpja7X4"}};
+  }
+
+  @DataProvider
+  public Object[][] loginWithoutPassword() {
+    return new Object[][]{{"peter@klaven", "Missing password"}};
   }
 }
