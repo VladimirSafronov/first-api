@@ -12,37 +12,42 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <testng.version>6.14.3</testng.version>
+    <rest-assured.version>3.1.1</rest-assured.version>
+    <jackson-databind.version>2.9.7</jackson-databind.version>
+    <jsoup.version>1.13.1</jsoup.version>
+    <allure-testng.version>2.13.2</allure-testng.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.14.3</version>
+      <version>${testng.version}</version>
     </dependency>
 
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
-      <version>3.1.1</version>
+      <version>${rest-assured.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.9.7</version>
+      <version>${jackson-databind.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
-      <version>1.13.1</version>
+      <version>${jsoup.version}</version>
     </dependency>
 
     <dependency>
       <groupId>io.qameta.allure</groupId>
       <artifactId>allure-testng</artifactId>
-      <version>2.13.2</version>
+      <version>${allure-testng.version}</version>
     </dependency>
   </dependencies>
 
