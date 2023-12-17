@@ -3,17 +3,27 @@ package in.reqres;
 import static io.restassured.RestAssured.given;
 import static specification.Specification.*;
 
-import data.Account;
-import data.Resource;
-import data.User;
+import data.*;
+import helpers.Parameters;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.testng.Assert;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class APITest {
 
@@ -28,15 +38,16 @@ public class APITest {
         .spec(responseSpec())
         .extract().body().as(Resource.class);
 
+    List<User> users = (List<User>) resource.getData();
     List<String> avatarNames = getFileNames(
-        resource.getData().stream().map(User::getAvatar).collect(
+        users.stream().map(User::getAvatar).collect(
             Collectors.toList()));
     int uniqueAvatarNamesCount = (int) avatarNames.stream().distinct().count();
     Assert.assertEquals(uniqueAvatarNamesCount, avatarNames.size(),
         "Список пользователей содержит одинаковые имена файлов: " + avatarNames);
   }
 
-  @Test(dataProvider = "loginCorrectData")
+  @Test(dataProvider = "loginCorrectData", dataProviderClass = Parameters.class)
   public void loginWithCorrectDataThenCorrectToken(String email, String password, String token) {
     Account account = new Account(email, password);
     Response response = given()
@@ -56,7 +67,7 @@ public class APITest {
             + realToken);
   }
 
-  @Test(dataProvider = "loginWithoutPassword")
+  @Test(dataProvider = "loginWithoutPassword", dataProviderClass = Parameters.class)
   public void loginWithoutPasswordThenError(String email, String error) {
     Account account = new Account(email);
     Response response = given()
@@ -75,6 +86,39 @@ public class APITest {
             + error);
   }
 
+  @Test
+  public void getListColorInfoThenDataYearsSorted() {
+    Resource resource = given()
+        .spec(requestSpec())
+        .when()
+        .get("/api/unknown")
+        .then()
+        .log().all()
+        .spec(responseSpec())
+        .extract().body().as(Resource.class);
+
+    List<ColorInfo> colorInfoList = (List<ColorInfo>) resource.getData();
+    System.out.println(colorInfoList);
+  }
+
+  @Test(dataProvider = "expectedTagsCount", dataProviderClass = Parameters.class)
+  public void getXMLDataThenEqualCountTags(int expectedTagsCount) {
+    Response response = given()
+        .when()
+        .get("https://gateway.autodns.com/")
+        .then()
+        .log().body()
+        .extract().response();
+
+    Document document = getDocumentFromString(response.asString());
+    XPath xPath = getXPath();
+    int actualTagsCount = getTagsCount(document, xPath);
+
+    Assert.assertEquals(actualTagsCount, expectedTagsCount,
+        "Количество тегов в файле: " + actualTagsCount + " отличаается от ожидаемого: "
+            + expectedTagsCount);
+  }
+
   /**
    * Метод находит названия файлов из url
    *
@@ -91,13 +135,41 @@ public class APITest {
     return fileNames;
   }
 
-  @DataProvider
-  public Object[][] loginCorrectData() {
-    return new Object[][]{{"eve.holt@reqres.in", "cityslicka", "QpwL5tke4Pnpja7X4"}};
+  /**
+   * Метод подсчитывает все теги документа при помощи XPath
+   */
+  private static int getTagsCount(Document document, XPath xPath) {
+    try {
+      return ((Number) xPath.evaluate("count(//*)", document,
+          XPathConstants.NUMBER)).intValue();
+    } catch (XPathExpressionException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  @DataProvider
-  public Object[][] loginWithoutPassword() {
-    return new Object[][]{{"peter@klaven", "Missing password"}};
+  /**
+   * Метод получающий Document из строки
+   */
+  private static Document getDocumentFromString(String xmlData) {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = null;
+    try {
+      builder = factory.newDocumentBuilder();
+    } catch (ParserConfigurationException e) {
+      throw new RuntimeException(e);
+    }
+    try {
+      return builder.parse(new InputSource(new StringReader(xmlData)));
+    } catch (SAXException | IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Метод генерирующий XPath
+   */
+  private static XPath getXPath() {
+    XPathFactory xPathFactory = XPathFactory.newInstance();
+    return xPathFactory.newXPath();
   }
 }
