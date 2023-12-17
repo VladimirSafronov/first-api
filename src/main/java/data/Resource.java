@@ -8,13 +8,13 @@ public class Resource {
   private int per_page;
   private int total;
   private int total_pages;
-  private List<User> data;
+  private List<? extends Info> data;
   private Support support;
 
   public Resource() {
   }
 
-  public Resource(int page, int per_page, int total, int total_pages, List<User> data,
+  public Resource(int page, int per_page, int total, int total_pages, List<? extends Info> data,
       Support support) {
     this.page = page;
     this.per_page = per_page;
@@ -56,11 +56,11 @@ public class Resource {
     this.total_pages = total_pages;
   }
 
-  public List<User> getData() {
+  public List<? extends Info> getData() {
     return data;
   }
 
-  public void setData(List<User> data) {
+  public void setData(List<? extends Info> data) {
     this.data = data;
   }
 

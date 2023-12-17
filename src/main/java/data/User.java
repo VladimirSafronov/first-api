@@ -1,8 +1,7 @@
 package data;
 
-public class User {
+public class User extends Info {
 
-  private int id;
   protected String email;
   private String first_name;
   private String last_name;
@@ -15,14 +14,6 @@ public class User {
     this.email = email;
     this.first_name = first_name;
     this.last_name = last_name;
-  }
-
-  public int getId() {
-    return id;
-  }
-
-  public void setId(int id) {
-    this.id = id;
   }
 
   public String getEmail() {
