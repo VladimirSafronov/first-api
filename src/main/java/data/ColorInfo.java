@@ -1,14 +1,15 @@
 package data;
 
-public class ColorInfo extends Info {
+/**
+ * Дата-класс информации о цветах
+ */
+public class ColorInfo {
 
+  private int id;
   private String name;
   private int year;
   private String color;
   private String pantone_value;
-
-  public ColorInfo() {
-  }
 
   public String getName() {
     return name;
@@ -40,5 +41,13 @@ public class ColorInfo extends Info {
 
   public void setPantone_value(String pantone_value) {
     this.pantone_value = pantone_value;
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
   }
 }

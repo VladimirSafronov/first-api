@@ -2,6 +2,9 @@ package helpers;
 
 import org.testng.annotations.DataProvider;
 
+/**
+ * Класс, используемый для параметризации тестов (DataProvider)
+ */
 public class Parameters {
 
   @DataProvider
