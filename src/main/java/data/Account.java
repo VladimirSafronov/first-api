@@ -1,5 +1,8 @@
 package data;
 
+/**
+ * Дата-класс аккаунта
+ */
 public class Account {
 
   private String email;

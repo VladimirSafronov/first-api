@@ -6,6 +6,9 @@ import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 
+/**
+ * Класс спецификаций тестов
+ */
 public class Specification {
 
   public static RequestSpecification requestSpec() {

@@ -10,6 +10,7 @@ import io.restassured.response.Response;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
@@ -19,7 +20,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import org.testng.Assert;
+import helpers.Assert;
 import org.testng.annotations.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -29,16 +30,16 @@ public class APITest {
 
   @Test
   public void takeAllUsersFromPageThenUsersAvatarsNamesDifferent() {
-    Resource resource = given()
+    UsersResponse usersResponse = given()
         .spec(requestSpec())
         .when()
         .get("/api/users?page=2")
         .then()
         .log().body()
         .spec(responseSpec())
-        .extract().body().as(Resource.class);
+        .extract().body().as(UsersResponse.class);
 
-    List<User> users = (List<User>) resource.getData();
+    List<User> users = usersResponse.getData();
     List<String> avatarNames = getFileNames(
         users.stream().map(User::getAvatar).collect(
             Collectors.toList()));
@@ -88,17 +89,20 @@ public class APITest {
 
   @Test
   public void getListColorInfoThenDataYearsSorted() {
-    Resource resource = given()
+    ColorInfosResponse colorInfosResponse = given()
         .spec(requestSpec())
         .when()
         .get("/api/unknown")
         .then()
         .log().all()
         .spec(responseSpec())
-        .extract().body().as(Resource.class);
+        .extract().body().as(ColorInfosResponse.class);
 
-    List<ColorInfo> colorInfoList = (List<ColorInfo>) resource.getData();
-    System.out.println(colorInfoList);
+    List<Integer> yearsList = colorInfosResponse.getData().stream()
+        .map(ColorInfo::getYear).collect(Collectors.toList());
+    List<Integer> sortedYearsList = getSortedList(yearsList);
+    Assert.assertEquals(yearsList, sortedYearsList,
+        "Данные получены не в отсортированном порядке по годам");
   }
 
   @Test(dataProvider = "expectedTagsCount", dataProviderClass = Parameters.class)
@@ -171,5 +175,17 @@ public class APITest {
   private static XPath getXPath() {
     XPathFactory xPathFactory = XPathFactory.newInstance();
     return xPathFactory.newXPath();
+  }
+
+  /**
+   * Метод копирует List, и сортирует его
+   *
+   * @param original - оригинальный список
+   * @return - отсортированная копия списка
+   */
+  private static List<Integer> getSortedList(List<Integer> original) {
+    List<Integer> sortedList = new ArrayList<>(original);
+    Collections.sort(sortedList);
+    return sortedList;
   }
 }

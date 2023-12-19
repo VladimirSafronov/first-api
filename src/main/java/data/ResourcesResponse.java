@@ -1,28 +1,15 @@
 package data;
 
-import java.util.List;
-
-public class Resource {
+/**
+ * Базовый дата-класс ответа ресурсов
+ */
+public class ResourcesResponse {
 
   private int page;
   private int per_page;
   private int total;
   private int total_pages;
-  private List<? extends Info> data;
   private Support support;
-
-  public Resource() {
-  }
-
-  public Resource(int page, int per_page, int total, int total_pages, List<? extends Info> data,
-      Support support) {
-    this.page = page;
-    this.per_page = per_page;
-    this.total = total;
-    this.total_pages = total_pages;
-    this.data = data;
-    this.support = support;
-  }
 
   public int getPage() {
     return page;
@@ -54,14 +41,6 @@ public class Resource {
 
   public void setTotal_pages(int total_pages) {
     this.total_pages = total_pages;
-  }
-
-  public List<? extends Info> getData() {
-    return data;
-  }
-
-  public void setData(List<? extends Info> data) {
-    this.data = data;
   }
 
   public Support getSupport() {
